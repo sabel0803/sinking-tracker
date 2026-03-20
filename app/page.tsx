@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock } from "lucide-react"; // Import icons
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "./config/firebase";
+import { checklogin, getUsers } from "./service/User.service";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -10,14 +13,41 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false); // State for visibility
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // if (email === "admin@test.com" && password === "123456") {
-    //   router.push("/dashboard");
-    // } else {
-    //   alert("Invalid credentials");
+  async function addUser() {
+    // const adduser = await addDoc(collection(db, "users"), {
+    //   name: "Juvy Boiser",
+    //   email: "juvy.boiser@gmail.com",
+    //   age: 25,
+    //   createdAt: new Date(),
+    //   password: "123456",
+    //   role: "member",
+    // });
+    // try {
+    //   const docRef = await addDoc(collection(db, "users"), {
+    //     name: "John Doe",
+    //     email: "john@example.com",
+    //     age: 25,
+    //     createdAt: new Date(),
+    //   });
+
+    //   console.log("Document written with ID:", docRef.id);
+    // } catch (error) {
+    //   console.error("Error adding document:", error);
     // }
-    router.push("/dashboard");
+    const data = await getUsers();
+
+    console.log(data);
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const user = await checklogin({ email, password });
+
+    if (user) {
+      router.push("/dashboard");
+    } else {
+      alert("Invalid credentials");
+    }
   };
 
   return (
@@ -80,21 +110,22 @@ export default function LoginPage() {
             </div>
 
             <button
-              type="submit"
               className="w-full bg-[#582C8B] hover:bg-[#45226d] text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-200 transition-all transform active:scale-95 flex justify-center items-center gap-2 mt-4"
+              onClick={() => addUser()}
             >
               Sign In to Dashboard
             </button>
-          </form>
+            {/* </form> */}
 
-          <div className="mt-8 text-center">
-            <p className="text-xs text-slate-400 font-medium">
-              Forgot password?{" "}
-              <span className="text-[#582C8B] cursor-pointer hover:underline font-bold">
-                Contact Admin
-              </span>
-            </p>
-          </div>
+            <div className="mt-8 text-center">
+              <p className="text-xs text-slate-400 font-medium">
+                Forgot password?{" "}
+                <span className="text-[#582C8B] cursor-pointer hover:underline font-bold">
+                  Contact Admin
+                </span>
+              </p>
+            </div>
+          </form>
         </div>
 
         <p className="text-center mt-10 text-[10px] text-slate-300 font-black uppercase tracking-[0.2em]">

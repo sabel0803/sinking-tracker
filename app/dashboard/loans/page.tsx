@@ -1,6 +1,6 @@
 // app/dashboard/loans/page.js
 "use client";
-import LoanModal from "@/app/components/LoanModal";
+import LoanModal from "@/components/LoanModal";
 import { useState } from "react";
 
 export default function LoanHistory() {

@@ -1,22 +1,32 @@
 "use client";
-import { useState } from "react";
-import PaymentModal from "../components/PaymentModal";
+import { useEffect, useState } from "react";
+import PaymentModal from "@/components/PaymentModal";
+import { getMembers } from "../service/User.service";
+import { getContributions } from "../service/Contribution.service";
 
 export default function Dashboard() {
   // 1. Added the missing state to track which modal is open
+  const [members, setMembers] = useState<any[]>([]);
   const [modalType, setModalType] = useState<"loan" | "contribution" | null>(
     null,
   );
-  const Payments = [
-    { name: "John Doe", type: "Loan", amount: "50,000", status: "Pending" },
-    { name: "Sarah Jen", type: "Loan", amount: "15,000", status: "Completed" },
-    { name: "Mike Ross", type: "Loan", amount: "25,000", status: "Pending" },
-    { name: "Mike Ross", type: "Loan", amount: "25,000", status: "Pending" },
-    { name: "Mike Ross", type: "Loan", amount: "25,000", status: "Pending" },
-    { name: "Mike Ross", type: "Loan", amount: "25,000", status: "Pending" },
-    { name: "Mike Ross", type: "Loan", amount: "25,000", status: "Pending" },
-    { name: "Mike Ross", type: "Loan", amount: "25,000", status: "Pending" },
-  ];
+  const [payments, setPayments] = useState<any[]>([]);
+  useEffect(() => {
+    loadMembers();
+  }, []);
+  useEffect(() => {
+    loadPayments();
+  }, []);
+
+  const loadMembers = async () => {
+    const data = await getMembers();
+    setMembers(data);
+  };
+  const loadPayments = async () => {
+    const data = await getContributions();
+    console.log("Loaded contributions:", data); // Debug log --- IGNORE ---
+    setPayments(data);
+  };
   return (
     <div className="p-10 w-full bg-[#F8F9FA] min-h-screen font-sans">
       {/* Unified Header */}
@@ -56,8 +66,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Stats Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
         <StatCard
           title="Total Contributions"
           amount="₱1.25m"
@@ -72,6 +81,12 @@ export default function Dashboard() {
         />
         <StatCard
           title="Available Balance"
+          amount="₱1.02m"
+          percentage="+40%"
+          color="bg-slate-100"
+        />
+        <StatCard
+          title="Pending Payments"
           amount="₱1.02m"
           percentage="+40%"
           color="bg-slate-100"
@@ -102,34 +117,40 @@ export default function Dashboard() {
                   Amount
                 </th>
                 <th className="pb-5 font-semibold w-1/4 border-b border-slate-50">
+                  Payment Date
+                </th>
+                <th className="pb-5 font-semibold w-1/4 border-b border-slate-50 text-center">
                   Status
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {Payments.map((payment, index) => (
+              {payments.map((contribution) => (
                 <tr
-                  key={index}
+                  key={contribution.memberId}
                   className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
                 >
-                  <td className="py-4 text-slate-500 font-medium truncate pr-4">
-                    {payment.name}
+                  <td className="py-1 text-slate-500 font-medium truncate pr-4">
+                    {contribution.name}
                   </td>
-                  <td className="py-4 font-bold text-slate-800 truncate pr-4">
-                    {payment.type}
+                  <td className="py-1 font-bold text-slate-800 truncate pr-4">
+                    {"Monthly Contribution"}
                   </td>
-                  <td className="py-4 font-semibold text-slate-700">
-                    ₱{payment.amount}
+                  <td className="py-1 font-semibold text-slate-700">
+                    ₱{contribution.amount}
                   </td>
-                  <td className="py-4">
+                  <td className="py-1 font-semibold text-slate-700">
+                    {"Payment Date"}
+                  </td>
+                  <td className="py-1 text-center">
                     <span
                       className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase inline-block whitespace-nowrap ${
-                        payment.status === "Completed"
+                        contribution.status === "Completed"
                           ? "bg-green-100 text-green-600"
                           : "bg-yellow-100 text-yellow-600"
                       }`}
                     >
-                      {payment.status}
+                      {contribution.status}
                     </span>
                   </td>
                 </tr>
@@ -144,6 +165,7 @@ export default function Dashboard() {
         isOpen={!!modalType}
         onClose={() => setModalType(null)}
         type={modalType || "contribution"}
+        members={members} // You can pass actual members data here if needed
       />
     </div>
   );

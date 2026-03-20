@@ -1,7 +1,16 @@
 "use client";
+import { getContributions, getPendingContributions } from "@/app/service/Contribution.service";
 import { Check, X, ExternalLink, Image as ImageIcon } from "lucide-react";
+import { useState } from "react";
 
 export default function ApprovalsPage() {
+ const [pendingPayments, setPendingPayments] = useState<any[]>([]);
+ const loadPayments = async () => {
+    const data = await getPendingContributions();
+    console.log("Loaded contributions:", data); // Debug log --- IGNORE ---
+    setPendingPayments(data);
+  };
+
   const pendingRequests = [
     {
       id: "REQ-001",
@@ -44,7 +53,7 @@ export default function ApprovalsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {pendingRequests.map((req) => (
+            {pendingPayments.map((req) => (
               <tr
                 key={req.id}
                 className="hover:bg-slate-50/50 transition-colors group"
