@@ -3,10 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation"; // Hook to get current URL
 import { LayoutDashboard, Receipt, FileText, LifeBuoy } from "lucide-react";
+import { use, useEffect, useState } from "react";
 
 export default function Sidebar() {
   const pathname = usePathname(); // This gets the current path (e.g., /dashboard/loans)
 
+  const [user, setUser] = useState<{ name: string; email: string } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("currentUser");
+    console.log("Loaded user from localStorage:", storedUser); // Debug log
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
   const menu = [
     {
       name: "Dashboard",
@@ -77,7 +89,7 @@ export default function Sidebar() {
           <div className="w-10 h-10 bg-slate-400 rounded-full"></div>
           <div className="text-xs">
             <p className="font-bold">Admin User</p>
-            <p className="opacity-60 text-[10px]">admin@test.com</p>
+            <p className="opacity-60 text-[10px]">{user?.name}</p>
           </div>
         </div>
       </div>

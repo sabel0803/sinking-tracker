@@ -2,38 +2,53 @@
 import { useEffect, useState } from "react";
 import PaymentModal from "@/components/PaymentModal";
 import { getMembers } from "../service/User.service";
-import { getContributions } from "../service/Contribution.service";
+import { getTransactions } from "../service/Contribution.service";
+import LoanModal from "@/components/LoanModal";
 
 export default function Dashboard() {
-  // 1. Added the missing state to track which modal is open
+  const [user, setUser] = useState<{ name: string; email: string } | null>(
+    null,
+  );
   const [members, setMembers] = useState<any[]>([]);
   const [modalType, setModalType] = useState<"loan" | "contribution" | null>(
     null,
   );
+  const [contributionsTotal, setContributionsTotal] = useState(0);
+  const [pendingTotal, setPendingTotal] = useState(0);
   const [payments, setPayments] = useState<any[]>([]);
   useEffect(() => {
     loadMembers();
   }, []);
+
   useEffect(() => {
-    loadPayments();
+    const unsubscribe = getTransactions((data, approvedTotal, pendingTotal) => {
+      setPayments(data);
+      setContributionsTotal(approvedTotal);
+      setPendingTotal(pendingTotal);
+    });
+
+    return () => unsubscribe(); // cleanup listener
   }, []);
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("currentUser");
+    console.log("Loaded user from localStorage:", storedUser); // Debug log
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
   const loadMembers = async () => {
     const data = await getMembers();
     setMembers(data);
   };
-  const loadPayments = async () => {
-    const data = await getContributions();
-    console.log("Loaded contributions:", data); // Debug log --- IGNORE ---
-    setPayments(data);
-  };
+
   return (
     <div className="p-10 w-full bg-[#F8F9FA] min-h-screen font-sans">
       {/* Unified Header */}
       <header className="mb-10 flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Welcome back, Arcebel
+            Welcome back,{user?.name}
           </h1>
           <p className="text-slate-500 font-medium mt-1">
             Fri, 20 Mar 10:11 AM • Here's your tracker summary
@@ -69,7 +84,14 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
         <StatCard
           title="Total Contributions"
-          amount="₱1.25m"
+          amount={
+            contributionsTotal
+              ? `₱ ${Number(contributionsTotal).toLocaleString("en-PH", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`
+              : "₱ 0.00"
+          }
           percentage="+40%"
           color="bg-purple-100"
         />
@@ -87,7 +109,14 @@ export default function Dashboard() {
         />
         <StatCard
           title="Pending Payments"
-          amount="₱1.02m"
+          amount={
+            pendingTotal
+              ? `₱ ${Number(pendingTotal).toLocaleString("en-PH", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`
+              : "₱ 0.00"
+          }
           percentage="+40%"
           color="bg-slate-100"
         />
@@ -133,11 +162,15 @@ export default function Dashboard() {
                   <td className="py-1 text-slate-500 font-medium truncate pr-4">
                     {contribution.name}
                   </td>
-                  <td className="py-1 font-bold text-slate-800 truncate pr-4">
-                    {"Monthly Contribution"}
+                  <td className="py-1 font-bold text-slate-800 truncate pr-4 uppercase">
+                    {contribution.type}
                   </td>
                   <td className="py-1 font-semibold text-slate-700">
-                    ₱{contribution.amount}
+                    ₱{" "}
+                    {Number(contribution.amount).toLocaleString("en-PH", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </td>
                   <td className="py-1 font-semibold text-slate-700">
                     {"Payment Date"}
@@ -145,9 +178,9 @@ export default function Dashboard() {
                   <td className="py-1 text-center">
                     <span
                       className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase inline-block whitespace-nowrap ${
-                        contribution.status === "Completed"
-                          ? "bg-green-100 text-green-600"
-                          : "bg-yellow-100 text-yellow-600"
+                        contribution.status === "pending"
+                          ? "bg-yellow-100 text-yellow-600"
+                          : "bg-green-100 text-green-600"
                       }`}
                     >
                       {contribution.status}

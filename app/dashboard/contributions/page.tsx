@@ -1,57 +1,20 @@
 // app/dashboard/contributions/page.js
+"use client";
+import { getContributions } from "@/app/service/Contribution.service";
+import { useEffect, useState } from "react";
 
 export default function ContributionsPage() {
-  const contributions = [
-    {
-      id: "001",
-      name: "John Doe",
-      amount: "500.00",
-      date: "24/05/2025",
-      status: "Pending",
-      store: "Monthly Contrib",
-    },
-    {
-      id: "0012",
-      name: "John Doe",
-      amount: "500.00",
-      date: "24/05/2025",
-      status: "Pending",
-      store: "Monthly Contrib",
-    },
-    {
-      id: "0023",
-      name: "Jane Smith",
-      amount: "1,000.00",
-      date: "24/05/2025",
-      status: "Paid",
-      store: "Monthly Contrib",
-    },
-    {
-      id: "0024",
-      name: "Jane Smith",
-      amount: "1,000.00",
-      date: "24/05/2025",
-      status: "Paid",
-      store: "Monthly Contrib",
-    },
-    {
-      id: "00122",
-      name: "John Doe",
-      amount: "500.00",
-      date: "24/05/2025",
-      status: "Pending",
-      store: "Monthly Contrib",
-    },
-    {
-      id: "00233",
-      name: "Jane Smith",
-      amount: "1,000.00",
-      date: "24/05/2025",
-      status: "Paid",
-      store: "Monthly Contrib",
-    },
-  ];
+  const [contributionsTotal, setContributionsTotal] = useState(0);
+  const [pendingTotal, setPendingTotal] = useState(0);
+  const [contributions, setContributions] = useState<any[]>([]);
+  useEffect(() => {
+    const unsubscribe = getContributions((data, total) => {
+      setContributions(data);
+      setContributionsTotal(total);
+    });
 
+    return () => unsubscribe(); // cleanup listener
+  }, []);
   return (
     <div className="p-10 bg-[#F8F9FA] min-h-screen">
       <header className="mb-10">
@@ -68,7 +31,13 @@ export default function ContributionsPage() {
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">
             Total Contributions
           </p>
-          <h3 className="text-3xl font-black text-slate-900">₱145,000</h3>
+          <h3 className="text-3xl font-black text-slate-900">
+            ₱{" "}
+            {Number(contributionsTotal).toLocaleString("en-PH", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </h3>
         </div>
         <div className="p-8 rounded-[2rem] bg-white border border-slate-100 shadow-sm">
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">
@@ -99,9 +68,7 @@ export default function ContributionsPage() {
                 <th className="pb-5 font-semibold w-1/4 border-b border-slate-50">
                   Member
                 </th>
-                <th className="pb-5 font-semibold w-1/4 border-b border-slate-50">
-                  Category
-                </th>
+
                 <th className="pb-5 font-semibold w-1/4 border-b border-slate-50">
                   Amount
                 </th>
@@ -128,13 +95,10 @@ export default function ContributionsPage() {
                   <td className="py-4 font-bold text-slate-800 truncate pr-4">
                     {item.name}
                   </td>
-                  <td className="py-4 font-bold text-slate-800 truncate pr-4">
-                    {item.store}
-                  </td>
                   <td className="py-4 font-semibold text-slate-700">
                     ₱{item.amount}
                   </td>
-                  <td className="py-4 text-slate-500">{item.date}</td>
+                  <td className="py-4 text-slate-500">{"DATE"}</td>
                   <td className="py-4 text-center">
                     <a
                       href="#"

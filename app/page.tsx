@@ -1,49 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock } from "lucide-react"; // Import icons
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "./config/firebase";
 import { checklogin, getUsers } from "./service/User.service";
+import { getContributions } from "./service/Contribution.service";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false); // State for visibility
+  const [payments, setPayments] = useState<any[]>([]);
   const router = useRouter();
-
-  async function addUser() {
-    // const adduser = await addDoc(collection(db, "users"), {
-    //   name: "Juvy Boiser",
-    //   email: "juvy.boiser@gmail.com",
-    //   age: 25,
-    //   createdAt: new Date(),
-    //   password: "123456",
-    //   role: "member",
-    // });
-    // try {
-    //   const docRef = await addDoc(collection(db, "users"), {
-    //     name: "John Doe",
-    //     email: "john@example.com",
-    //     age: 25,
-    //     createdAt: new Date(),
-    //   });
-
-    //   console.log("Document written with ID:", docRef.id);
-    // } catch (error) {
-    //   console.error("Error adding document:", error);
-    // }
-    const data = await getUsers();
-
-    console.log(data);
-  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const user = await checklogin({ email, password });
 
     if (user) {
+      localStorage.setItem("currentUser", JSON.stringify({ name: user.name })); // Save user info to localStorage
       router.push("/dashboard");
     } else {
       alert("Invalid credentials");

@@ -30,10 +30,17 @@ export async function checklogin(param: { email: string; password: string }) {
     where("email", "==", param.email),
     where("password", "==", param.password),
   );
-
   const snapshot = await getDocs(q);
+  if (snapshot.empty) {
+    return null; // ❌ no user found
+  }
 
-  return !snapshot.empty; // ✅ true if user exists
+  const userDoc = snapshot.docs[0]; // ✅ get first match
+
+  return {
+    id: userDoc.id,
+    ...userDoc.data(),
+  };
 }
 export async function getMembers() {
   const q = query(collection(db, "users"), where("role", "==", "member"));

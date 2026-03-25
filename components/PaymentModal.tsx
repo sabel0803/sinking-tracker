@@ -1,6 +1,6 @@
 "use client";
 
-import { addContribution } from "@/app/service/Contribution.service";
+import { addTransactions } from "@/app/service/Contribution.service";
 import { getMembers } from "@/app/service/User.service";
 import { add } from "firebase/firestore/pipelines";
 import { X, CreditCard, PieChart } from "lucide-react";
@@ -13,7 +13,12 @@ interface ModalProps {
   members: any[]; // Optional, can be used to pre-select a member if needed
 }
 
-export default function PaymentModal({ isOpen, onClose, type, members }: ModalProps) {
+export default function PaymentModal({
+  isOpen,
+  onClose,
+  type,
+  members,
+}: ModalProps) {
   const [selectedMember, setSelectedMember] = useState("");
   const [amount, setAmount] = useState<number | "">("");
   const [date, setDate] = useState("");
@@ -36,17 +41,18 @@ export default function PaymentModal({ isOpen, onClose, type, members }: ModalPr
       amount: Number(amount),
       date: new Date(date),
       proof: proof,
+      type: type,
     };
-    const result = await addContribution(contributionparam);
+    console.log("Submitting contribution with params:", contributionparam); // Debug log
+    const result = await addTransactions(contributionparam);
     if (result.success) {
-      alert("Contribution added successfully!");
+      alert("Payment  added successfully!");
       onClose();
     } else {
       alert("Error adding contribution.");
     }
   };
   return (
-
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-page">
       <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100">
         {/* Header */}
